@@ -1,10 +1,10 @@
 package api
 
 import (
-	"GoNews/pkg/storage"
 	"encoding/json"
 	"net/http"
 
+	"Practice-31a-3.1/pkg/storage"
 	"github.com/gorilla/mux"
 )
 

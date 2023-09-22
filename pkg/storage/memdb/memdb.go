@@ -1,26 +1,26 @@
 package memdb
 
-import "GoNews/pkg/storage"
+import "Practice-31a-3.1/pkg/storage"
 
 // Хранилище данных.
-type Store struct{}
+type Storage struct{}
 
 // Конструктор объекта хранилища.
-func New() *Store {
-	return new(Store)
+func New() *Storage {
+	return new(Storage)
 }
 
-func (s *Store) Posts() ([]storage.Post, error) {
+func (s *Storage) Posts() ([]storage.Post, error) {
 	return posts, nil
 }
 
-func (s *Store) AddPost(storage.Post) error {
+func (s *Storage) AddPost(storage.Post) error {
 	return nil
 }
-func (s *Store) UpdatePost(storage.Post) error {
+func (s *Storage) UpdatePost(storage.Post) error {
 	return nil
 }
-func (s *Store) DeletePost(storage.Post) error {
+func (s *Storage) DeletePost(storage.Post) error {
 	return nil
 }
 
