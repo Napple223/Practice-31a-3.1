@@ -1,11 +1,13 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"Practice-31a-3.1/pkg/api"
 	"Practice-31a-3.1/pkg/storage"
 	"Practice-31a-3.1/pkg/storage/memdb"
+	"Practice-31a-3.1/pkg/storage/mongo"
 	"Practice-31a-3.1/pkg/storage/postgres"
 )
 
@@ -24,21 +26,19 @@ func main() {
 	// БД в памяти.
 	db := memdb.New()
 
-	db2, err := postgres.New("postgres://postgres:postgres@localhost")
-	/*
-		// Реляционная БД PostgreSQL.
-		db2, err := postgres.New("")
-		if err != nil {
-			log.Fatal(err)
-		}*/
-	/*
-		// Документная БД MongoDB.
-		db3, err := mongo.New("mongodb://server.domain:27017/")
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-	_, _ = db, db2 //, db3
+	db2, err := postgres.New("postgres://postgres:andrey@localhost:5432/GoNews")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Документная БД MongoDB.
+	db3, err := mongo.New("mongodb://server.domain:27017/")
+	defer mongo.CloseConn(db3)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, _, _ = db, db2, db3
 
 	// Инициализируем хранилище сервера конкретной БД.
 	srv.db = db2

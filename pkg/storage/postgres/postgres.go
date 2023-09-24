@@ -1,8 +1,9 @@
-package storage
+package postgres
 
 import (
 	"context"
 
+	"Practice-31a-3.1/pkg/storage"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,41 +27,44 @@ func New(constr string) (*Storage, error) {
 }
 
 // Структура поста
-type Post struct {
-	Id        int
-	AuthorID  int
-	Title     string
-	Content   string
-	CreatedAt int
-}
+// type Post struct {
+// 	Id        int
+// 	AuthorID  int
+// 	Title     string
+// 	Content   string
+// 	CreatedAt int
+// }
 
 // Функция, возвращающая все существующие посты из БД
-func (s *Storage) Posts() ([]Post, error) {
+func (s *Storage) Posts() ([]storage.Post, error) {
 	rows, err := s.db.Query(context.Background(), `
 		SELECT
-		id,
-		author_id,
-		title,
-		"content",
-		created_at
-		FROM posts
-		ORDER BY id;
+		posts.id,
+		posts.title,
+		posts."content",
+		posts.author_id,
+		authors.name
+		posts.created_at
+		FROM posts, authors
+		WHERE posts.author_id=authors.id
+		ORDER BY posts.id;
 	`)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var posts []Post
+	var posts []storage.Post
 
 	for rows.Next() {
-		var p Post
+		var p storage.Post
 
 		err = rows.Scan(
-			&p.Id,
-			&p.AuthorID,
+			&p.ID,
 			&p.Title,
 			&p.Content,
+			&p.AuthorID,
+			&p.AuthorName,
 			&p.CreatedAt,
 		)
 
@@ -73,36 +77,35 @@ func (s *Storage) Posts() ([]Post, error) {
 	return posts, rows.Err()
 }
 
-// Функция добавляет новый пост и возвращает его id
-func (s *Storage) AddPost(p Post) (int, error) {
-	var id int
-	err := s.db.QueryRow(context.Background(), `
-		INSERT INTO posts (title, "content") VALUES ($1, $2) RETURNING id;
+// Функция добавляет новый пост
+func (s *Storage) AddPost(p storage.Post) error {
+	_, err := s.db.Exec(context.Background(), `
+		INSERT INTO posts (title, "content") VALUES ($1, $2);
 	`,
 		p.Title,
 		p.Content,
-	).Scan(&id)
-	return id, err
-}
-
-// Функция для обновления поста
-func (s *Storage) UpdatePost(id int, p Post) error {
-	_, err := s.db.Exec(context.Background(), `
-		UPDATE posts SET title=$1, "content"=$2
-		WHERE id=$3;
-	`,
-		p.Title, p.Content, id,
 	)
 	return err
 }
 
-// Функция для удаления поста из БД
-func (s *Storage) DeletePost(id int) error {
+// Функция для обновления поста
+func (s *Storage) UpdatePost(p storage.Post) error {
+	_, err := s.db.Exec(context.Background(), `
+		UPDATE posts SET title=$1, "content"=$2
+		WHERE id=$3;
+	`,
+		p.Title, p.Content, p.ID,
+	)
+	return err
+}
+
+// Функция для удаления поста
+func (s *Storage) DeletePost(p storage.Post) error {
 	_, err := s.db.Exec(context.Background(), `
 		DELETE FROM posts
 		WHERE id=$1;
 	`,
-		id,
+		p.ID,
 	)
 	return err
 }
